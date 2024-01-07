@@ -1,16 +1,16 @@
 ## PROXY CHECKER
 
-### Installation
+### Установка
 ```
 git clone https://github.com/supermetrolog/proxychecker.git
 ```
 
-### Launch
+### Запуска
 ```
 go run ./cmd/main.go
 ```
 
-### Description
+### Описание
 
 Список проксей по умолчанию находится в папке `resources` в файле `proxylist.txt`.
 Вы можете изменить расположение передав флаг `-filepath=<value>`
