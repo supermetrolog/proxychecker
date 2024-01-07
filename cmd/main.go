@@ -10,24 +10,18 @@ import (
 	"time"
 )
 
-var (
-	workersCount               = 100
-	filePath                   = "resource/proxylist.txt"
-	timeout      time.Duration = 5
-)
-
 func main() {
-	flag.String("filepath", filePath, "proxy list source file path")
-	flag.Int("wc", workersCount, "workers count")
-	flag.Duration("timeout", timeout, "connection timeout")
+	filePath := flag.String("filepath", "resources/proxylist.txt", "proxy list source file path")
+	workersCount := flag.Int("wc", 100, "workers count")
+	timeout := flag.Duration("timeout", 5, "connection timeout")
 	flag.Parse()
 
 	config := proxychecker.Config{
-		ConnTimeout:  timeout * time.Second,
-		WorkersCount: workersCount,
+		ConnTimeout:  *timeout * time.Second,
+		WorkersCount: *workersCount,
 	}
 
-	reader, err := FileReader(filePath)
+	reader, err := FileReader(*filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
