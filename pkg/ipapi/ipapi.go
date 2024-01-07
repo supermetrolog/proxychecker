@@ -42,18 +42,27 @@ func (r *Response) IsOK() bool {
 	return r.Status == StatusSuccess
 }
 
-type Client interface {
+type HttpClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-func Do(c Client) (ipApiRes *Response, err error) {
-	req, err := http.NewRequest("GET", HttpUrl, nil)
+type Client struct {
+	Url        string
+	HttpClient HttpClient
+}
+
+func NewDefaultClient() *Client {
+	return &Client{Url: HttpUrl, HttpClient: &http.Client{}}
+}
+
+func (c *Client) Do() (ipApiRes *Response, err error) {
+	req, err := http.NewRequest("GET", c.Url, nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("create new request error: %v", err)
 	}
 
-	res, err := c.Do(req)
+	res, err := c.HttpClient.Do(req)
 
 	if err != nil {
 		return nil, fmt.Errorf("http do error: %v", err)

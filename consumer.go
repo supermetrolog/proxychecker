@@ -1,27 +1,22 @@
 package proxychecker
 
-import "log"
-
+// Consumer получает задания из канала, обрабатывает их и кладет результат в результирующий канал
 type Consumer struct {
-	tasksCh chan *Task
-	checker *Checker
+	tasksCh   chan *Task
+	resultsCh chan *Result
+	checker   *Checker
 }
 
-func NewConsumer(tasksCh chan *Task, checker *Checker) *Consumer {
+func NewConsumer(tasksCh chan *Task, resultsCh chan *Result, checker *Checker) *Consumer {
 	return &Consumer{
-		tasksCh: tasksCh,
-		checker: checker,
+		tasksCh:   tasksCh,
+		resultsCh: resultsCh,
+		checker:   checker,
 	}
 }
 
 func (c *Consumer) Run() {
 	for task := range c.tasksCh {
-		result := c.checker.Check(task.ProxyUrl)
-		if result.Err != nil {
-			//log.Printf("Fail: \"%s\". Err: %v", task.ProxyUrl.String(), result.Err)
-			continue
-		}
-
-		log.Printf("OK: \"%s\". IP: %s, CountryCode: %s, Country: %s", task.ProxyUrl.String(), result.ExternalIp, result.CountryCode, result.Country)
+		c.resultsCh <- c.checker.Check(task.ProxyUrl)
 	}
 }

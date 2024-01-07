@@ -8,6 +8,7 @@ import (
 	"net/url"
 )
 
+// Producer читает из ридера по строке пока не закончится файл и создает таски
 type Producer struct {
 	tasksCh chan *Task
 	reader  io.Reader
@@ -31,7 +32,7 @@ func (p *Producer) Run() error {
 
 		u, err := url.Parse(string(line))
 		if err != nil {
-			log.Printf("WARN. Parse proxy url error: %v", err)
+			log.Printf("Warning: parse proxy url error: %v", err)
 			continue
 		}
 
@@ -40,6 +41,5 @@ func (p *Producer) Run() error {
 		}
 	}
 
-	close(p.tasksCh)
 	return nil
 }

@@ -1,9 +1,9 @@
 package proxychecker
 
 import (
+	"github.com/supermetrolog/proxychecker/pkg/ipapi"
 	"io"
 	"log"
-	"net/http"
 	"net/url"
 	"sync"
 	"time"
@@ -14,6 +14,7 @@ type Task struct {
 }
 
 type Result struct {
+	Proxy       *url.URL
 	Err         error
 	ExternalIp  string
 	Country     string
@@ -38,28 +39,36 @@ func NewApp(config Config, proxyReader io.Reader) *App {
 }
 
 func (a *App) Run() {
-	checker := NewChecker(a.config.ConnTimeout, &http.Client{})
+	checker := NewChecker(a.config.ConnTimeout, ipapi.NewDefaultClient())
 	tasks := make(chan *Task, a.config.WorkersCount)
+	results := make(chan *Result, a.config.WorkersCount)
 
 	producer := NewProducer(tasks, a.proxyReader)
-	consumer := NewConsumer(tasks, checker)
+	consumer := NewConsumer(tasks, results, checker)
+	processor := NewProcessor(results)
 
 	go func() {
+		defer close(tasks)
 		err := producer.Run()
 		if err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	wg := sync.WaitGroup{}
-	wg.Add(a.config.WorkersCount)
+	go func() {
+		defer close(results)
+		wg := sync.WaitGroup{}
+		wg.Add(a.config.WorkersCount)
 
-	for i := 0; i < a.config.WorkersCount; i++ {
-		go func() {
-			consumer.Run()
-			wg.Done()
-		}()
-	}
+		for i := 0; i < a.config.WorkersCount; i++ {
+			go func() {
+				defer wg.Done()
+				consumer.Run()
+			}()
+		}
 
-	wg.Wait()
+		wg.Wait()
+	}()
+
+	processor.Run()
 }
