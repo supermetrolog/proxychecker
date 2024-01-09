@@ -5,7 +5,7 @@
 git clone https://github.com/supermetrolog/proxychecker.git
 ```
 
-### Запуска
+### Запуск
 ```
 go run ./cmd/main.go
 ```

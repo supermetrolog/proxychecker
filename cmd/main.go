@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"fmt"
 )
 
 func main() {
@@ -33,7 +34,7 @@ func main() {
 func FileReader(filePath string) (io.Reader, error) {
 	path, err := filepath.Abs(filePath)
 	if err != nil {
-		log.Fatalf("Create abs filepath error: %v", err)
+	 	return nil, fmt.Errorf("create abs filepath error: %v", err)
 	}
 
 	return os.OpenFile(path, os.O_RDONLY, 0744)
